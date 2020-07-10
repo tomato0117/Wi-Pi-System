@@ -32,15 +32,31 @@ static int flag;
 
 BlynkTimer tmr;
 
+
+/*テンプレ
+ BLYNK_WRITE(バーチャルピン番号)
+{
+    printf("Got a value: %s\n", param[0].asStr()); 
+}
+
+備考としてparamに対してasInt() asFloat(),asDouble(),asStr(),getBuffer(),getLengh()が型変換で使える
+ */
+ 
+ 
+ /*
+   
+  */
+
 BLYNK_WRITE(V1)
 {
     printf("Got a value: %s\n", param[0].asStr());
+    printf("Got a value２: %s\n", param[1].asStr());
 }
 
 BLYNK_WRITE(V2)
 {
-    printf("ip aGot a value: %s\n", param[0].asStr());
-    //system("python /home/pi/Desktop/ir/test/led.py");
+    printf("Got a value: %s\n", param[0].asStr());
+    system("python /home/pi/Desktop/ir/test/led.py");
 }
 
 
@@ -53,7 +69,10 @@ BLYNK_WRITE(V2)
 BLYNK_WRITE(V3)
 {
    //printf("ls Got a value: %s\n\n\n\n", param[0].asStr());
+   
+   //ON、OFFで処理を切り替える
    flag=param[0].asInt();
+   
    
     if(flag== 0){
         printf("OFFfffffffff\n");
