@@ -54,6 +54,9 @@ def router():
     if flag1 == 1:
 	#onにする
 	#subprocess.call(['sudo','sed','-i','s/Wi-Pi-OPEN.conf/hostapd.conf/g','/etc/default/hostapd'])
+	#subprocess.call(['sudo','ip','set','wlan1','/down'])
+
+	
 	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
 	#subprocess.call(['sudo','systemctl','restart','hostapd'])
 	led()#処理例
@@ -65,6 +68,8 @@ def router():
     else:
 	#off
 	#subprocess.call(['sudo','sed','-i','s/hostapd.conf/Wi-Pi-OPEN.conf/g','/etc/default/hostapd'])
+	#subprocess.call(['sudo','ip','set','wlan1','/down'])
+
 	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
 	#subprocess.call(['sudo','systemctl','restart','hostapd'])
 	led() #処理例

@@ -1,3 +1,0 @@
-main.cpp	Blynkのメインプログラム
-test_value.py	必ず使われるであろうledの中で処理を分けた
-test_value2.py	ledとprocess（処理のとこ）で分けた

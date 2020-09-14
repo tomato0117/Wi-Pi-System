@@ -37,90 +37,140 @@ THE SOFTWARE.
 '''
 
 import grove_gesture_sensor
+import threading
+import thread
 import time
+import subprocess
 from grovepi import *
 
-flag1 =True
-#led = 7
 
-#pinMode(4,"OUTPUT")
+
+
+flag1 =False
+flag2 =False
 time.sleep(1)
 
 
+def router():
+	
+    global flag1
+    global flag2
+                
+    if flag1 == 1:
+	#onにする
+	#subprocess.call(['sudo','ip','set','wlan1','up'])
+
+	#subprocess.call(['sudo','sed','-i','s/Wi-Pi-OPEN.conf/hostapd.conf/g','/etc/default/hostapd'])
+	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
+	#subprocess.call(['sudo','systemctl','restart','hostapd'])
+	led()#処理例
+	
+	
+        flag1=0
+	flag2=0
+        print("router change :"+ str(flag1))
+	print("flag2:"+str(flag2))
+
+	
+    else:
+	#off
+	#subprocess.call(['sudo','ip','set','wlan1','down'])
+
+	#subprocess.call(['sudo','sed','-i','s/hostapd.conf/Wi-Pi-OPEN.conf/g','/etc/default/hostapd'])
+	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
+	#subprocess.call(['sudo','systemctl','restart','hostapd'])
+	led() #処理例
+	flag1= 1 
+	flag2= 1
+	print("router change :"+ str(flag1))
+	print("flag2:"+str(flag2))
+		
+
+
 def led():
+    led = 7
+	
+    #Blink the LED
+    digitalWrite(led,1)     # Send HIGH to switch on LED
+    print ("LED ON!")
+    time.sleep(3)
+
+    digitalWrite(led,0)     # Send LOW to switch off LED
+    print ("LED OFF!")
+    time.sleep(3)
+	
+	
+	
+def led_thread():
+    global flag2
+    led = 7
     
-
+    while True:
+	if(flag2==1):
+	    #Blink the LED
+	    digitalWrite(led,1)		# Send HIGH to switch on LED
+	    print ("thLED ON!")
+	    time.sleep(0.5)
+	    
+	    digitalWrite(led,0)		# Send LOW to switch on LED
+	    print ("thLED OFF!")
+	    time.sleep(0.5)
+	else:
+	    time.sleep(1)
     
-    try:
-        global flag1
-        #global led
-        led = 7
-        
-        pinMode(led,"OUTPUT")
-            
-        if flag1 == 1:
-            #Blink the LED
-            digitalWrite(led,1)     # Send HIGH to switch on LED    (port_no,on)
-            print ("あLED ONnnnnnnnnnnnnnnnnn!")
-            time.sleep(0.1)
-            flag1=0
-            print("flag1 change :"+ str(flag1))
-            #print("led port :"+ str(led))
-            
-        else:
-            digitalWrite(led,0)     # Send LOW to switch off LED
-            print ("LED OFFfffffffffffffffff")
-            time.sleep(0.1)
-            flag1=1
-            print("flag1 change :"+ str(flag1))
-
-    except KeyboardInterrupt:   # Turn LED off before stopping
-        print("stop")
-        digitalWrite(led,0)
-       # break
-        
-    except IOError:             # Print "Error" if communication error encountered
-        print ("Error")
-
+	
 
 
 def main():
+    print("いんすたんす？")
     g=grove_gesture_sensor.gesture()
+    print("ｇ init")
     g.init()
+    
+    #ledd = threading.Thread(target=led)
+
     while True:
+	time.sleep(0.01)
         gest=g.return_gesture()
         #Match the gesture
         if gest==g.FORWARD:
             print("FORWARD")
- #           time.sleep(1)
-            led()
+            time.sleep(1)
+            router()
+
+
+        elif gest==g.DOWN:
+            print("DOWN")
+            time.sleep(1)
+            router()
+
+        #elif gest==0:
+	#    led()
             
-        elif gest==g.BACKWARD:
-            print("BACKWARD")
- #           time.sleep(1)
-            led()
+
+            
+"""
+
+            
+'''
         elif gest==g.RIGHT:
             print("RIGHT")
-  #          time.sleep(1)
-            led()
+            time.sleep(1)
+            router()
         elif gest==g.LEFT:
             
             print("LEFT")
-   #         time.sleep(1)
-            led()
+            time.sleep(1)
+            router()
             
         elif gest==g.UP:
             print("UP")
- #           time.sleep(1)
-            led()
-            
-        elif gest==g.DOWN:
-            print("DOWN")
- #           time.sleep(1)
-            led()
-            
-"""
-        elif gest==g.CLOCKWISE:#以下動作不安定物
+            time.sleep(1)
+	    print("router")
+            router()
+
+'''
+        elif gest==g.CLOCKWISE:
             print("CLOCKWISE")
     #        time.sleep(1)
             led()
@@ -132,10 +182,21 @@ def main():
             print("WAVE")
    #         time.sleep(1)
             led()
-        elif gest==0: #何も操作してないとき
-            print("-")
+
 """
     
 if __name__ == '__main__':
+    main = threading.Thread(target=main)
+    #led = threading.Thread(target=led_thread)
+    
+    
 
-    main()
+    #main()
+    main.start()
+    led_thread()
+    #led.start()
+
+    #args=()
+    #thread.start_new_thread(main,args) 
+    #thread.start_new_thread(led_thread,args)
+    #main()

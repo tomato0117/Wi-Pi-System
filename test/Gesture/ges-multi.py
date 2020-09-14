@@ -37,83 +37,137 @@ THE SOFTWARE.
 '''
 
 import grove_gesture_sensor
+
 import time
+import subprocess
 from grovepi import *
 
-flag1 =True
+from multiprocessing import Process
 
 
+
+flag1 =False
+flag2 =False
 time.sleep(1)
 
 
-def process():
+def router():
 	
     global flag1
+    global flag2
                 
     if flag1 == 1:
-        led()#処理例
+	#onにする
+	#subprocess.call(['sudo','ip','set','wlan1','up'])
+
+	#subprocess.call(['sudo','sed','-i','s/Wi-Pi-OPEN.conf/hostapd.conf/g','/etc/default/hostapd'])
+	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
+	#subprocess.call(['sudo','systemctl','restart','hostapd'])
+	led()
+	
+	
         flag1=0
-        print("flag1 change :"+ str(flag1))
-        
+	flag2=1
+        print("router change :"+ str(flag1))
+
+	
     else:
-		led() #処理例
-		flag1= 1 
-		print("flag1 change :"+ str(flag1))
+	#off
+	#subprocess.call(['sudo','ip','set','wlan1','down'])
+
+	#subprocess.call(['sudo','sed','-i','s/hostapd.conf/Wi-Pi-OPEN.conf/g','/etc/default/hostapd'])
+	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
+	#subprocess.call(['sudo','systemctl','restart','hostapd'])
+	led()
+	flag1= 1 
+	flag2= 0
+	print("router change :"+ str(flag1))
+		
 
 
 def led():
-	global	flag1
-	led = 7
-	if (flag1==1):
-		#Blink the LED
-		digitalWrite(led,1)		# Send HIGH to switch on LED
-		print ("LED ON!")
-		time.sleep(0.1)
-		
-	else:
-		digitalWrite(led,0)		# Send LOW to switch on LED
-		print ("LED OFF!")
-		time.sleep(0.1)
+    led = 7
 	
+    #Blink the LED
+    digitalWrite(led,1)     # Send HIGH to switch on LED
+    print ("LED ON!")
+    time.sleep(3)
+
+    digitalWrite(led,0)     # Send LOW to switch off LED
+    print ("LED OFF!")
+    time.sleep(3)
+	
+	
+	
+def led_thread():
+    global flag2
+    #led = 7
+    
+    while True:
+	if(flag2==1):
+	    #Blink the LED
+	    digitalWrite(led,1)		# Send HIGH to switch on LED
+	    print ("LED ON!")
+	    time.sleep(0.5)
+	    
+	    digitalWrite(led,0)		# Send LOW to switch on LED
+	    print ("LED OFF!")
+	    time.sleep(0.5)
+	else:
+	    time.sleep(1)
+    
 	
 
 
 def main():
+    print("いんすたんす？")
     g=grove_gesture_sensor.gesture()
+    print("ｇ init")
     g.init()
+    
+    #ledd = threading.Thread(target=led)
+
     while True:
+	time.sleep(0.01)
         gest=g.return_gesture()
         #Match the gesture
         if gest==g.FORWARD:
             print("FORWARD")
- #           time.sleep(1)
-            process()
+            time.sleep(1)
+            router()
+
+
+        elif gest==g.DOWN:
+            print("DOWN")
+            time.sleep(1)
+            router()
+
+        #elif gest==0:
+	#    led()
             
-        elif gest==g.BACKWARD:
-            print("BACKWARD")
- #           time.sleep(1)
-            process()
+
+            
+"""
+
+            
+'''
         elif gest==g.RIGHT:
             print("RIGHT")
-  #          time.sleep(1)
-            process()
+            time.sleep(1)
+            router()
         elif gest==g.LEFT:
             
             print("LEFT")
-   #         time.sleep(1)
-            process()
+            time.sleep(1)
+            router()
             
         elif gest==g.UP:
             print("UP")
- #           time.sleep(1)
-            process()
-            
-        elif gest==g.DOWN:
-            print("DOWN")
- #           time.sleep(1)
-            process()
-            
-"""
+            time.sleep(1)
+	    print("router")
+            router()
+
+'''
         elif gest==g.CLOCKWISE:
             print("CLOCKWISE")
     #        time.sleep(1)
@@ -126,10 +180,20 @@ def main():
             print("WAVE")
    #         time.sleep(1)
             led()
-        elif gest==0:
-            print("-")
+
 """
     
 if __name__ == '__main__':
+    #main = threading.Thread(target=main)
+    led = Process(target=led_thread)
+    
+    
 
+    #main()
+    #main.start()
+    led.start()
+
+    #args=()
+    #thread.start_new_thread(main,args) 
+ 
     main()

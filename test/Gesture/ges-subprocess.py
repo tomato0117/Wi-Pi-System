@@ -37,142 +37,163 @@ THE SOFTWARE.
 '''
 
 import grove_gesture_sensor
-import threading
+
 import time
 import subprocess
 from grovepi import *
 
-class Test1():
-  def __init__(self):
-    self.started = threading.Event()
-    self.alive = True
-    self.thread = threading.Thread(target=self.func)
-    self.thread.start()
+#from multiprocessing import Process
 
-  def __del__(self):
-    print("killcall")
-    self.kill()
-    print("killfin")
-
-  def begin(self):
-    print("selfbegin")
-    self.started.set()
-    print("setfin")
-
-  def end(self):
-    print("end.clearstat")
-    self.started.clear()
-    digitalWrite(7,0)# Send LOW to switch off LED
-    print("\nend")
-
-  def kill(self):
-    print("killset")
-    self.started.set()
-    self.alive = False
-    print("killjoin")
-    self.thread.join()
-
-  def func(self):
-    i = 0
-    led =7
-    self.started.wait()
-    
-    print("thgいんすたんす")
-    g=grove_gesture_sensor.gesture()
-    print("th ｇ init")
-    g.init()
-    while self.alive:
-      i += 1
-      #print ("{}\r".format(i),end="")
-      print "{}\r".format(i),
-      
-      digitalWrite(led,1)# Send HIGH to switch on LED
-      print ("Thread-LED ON!")
-      time.sleep(2)
-      digitalWrite(led,0)# Send LOW to switch off LED
-      print ("Thread-LED OFF!")
-      time.sleep(2)
-      self.started.wait()
 
 
 flag1 =False
+#flag2 =False
+sub =""
 time.sleep(1)
 
 
 def router():
 	
     global flag1
+    #global flag2
                 
     if flag1 == 1:
 	#onにする
+	#subprocess.call(['sudo','ip','set','wlan1','up'])
+
 	#subprocess.call(['sudo','sed','-i','s/Wi-Pi-OPEN.conf/hostapd.conf/g','/etc/default/hostapd'])
 	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
 	#subprocess.call(['sudo','systemctl','restart','hostapd'])
-	led()#処理例
+	led()
+	led_subprocess()
+	print("subpro1")
+	
 	
         flag1=0
+	#flag2=1
         print("router change :"+ str(flag1))
 
 	
     else:
 	#off
+	#subprocess.call(['sudo','ip','set','wlan1','down'])
+
 	#subprocess.call(['sudo','sed','-i','s/hostapd.conf/Wi-Pi-OPEN.conf/g','/etc/default/hostapd'])
 	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
 	#subprocess.call(['sudo','systemctl','restart','hostapd'])
-	led() #処理例
+	led()
+	led_subprocess()
+	print("subpro2")
+	
 	flag1= 1 
+	#flag2= 0
 	print("router change :"+ str(flag1))
 		
 
 
 def led():
-    global flag1
     led = 7
-    if (flag1==1):
-	#Blink the LED
-	digitalWrite(led,1)		# Send HIGH to switch on LED
-	print ("LED ON!")
-	time.sleep(0.1)
-		
-    else:
-	digitalWrite(led,0)		# Send LOW to switch on LED
-	print ("LED OFF!")
-	time.sleep(0.1)
+	
+    #Blink the LED
+    digitalWrite(led,1)     # Send HIGH to switch on LED
+    print ("LED ON!")
+    time.sleep(3)
 
-'''def led_thread():#スレッドを使用点滅はWhileTrueを利用、点灯はbreakで抜けてくる、stopを引数に入れると完全に止まる
-    led = 7
-    while True:
-	digitalWrite(led,1)     # Send HIGH to switch on LED
-	print ("Thread-LED ON!")
-	time.sleep(0.5)
-                    
-	digitalWrite(led,0)     # Send LOW to switch off LED
-	print ("Thread-LED OFF!")
-	time.sleep(0.5)
-'''
+    digitalWrite(led,0)     # Send LOW to switch off LED
+    print ("LED OFF!")
+    time.sleep(3)
 	
+	
+	
+#~ def led_thread():
+    #~ global flag2
+    #~ #led = 7
     
-	
+    #~ while True:
+	#~ if(flag2==1):
+	    #~ #Blink the LED
+	    #~ digitalWrite(led,1)		# Send HIGH to switch on LED
+	    #~ print ("LED ON!")
+	    #~ time.sleep(0.5)
+	    
+	    #~ digitalWrite(led,0)		# Send LOW to switch on LED
+	    #~ print ("LED OFF!")
+	    #~ time.sleep(0.5)
+	#~ else:
+	    #~ time.sleep(1)
+    
+def led_subprocess():
+    global sub
+    sub=subprocess.Popen(['python','/home/pi/Desktop/Wi-Pi-System/test/Other/led_thread.py'])
 
 
 def main():
-    print("いんすたんす？")
-    g=grove_gesture_sensor.gesture()
-    print("ｇ init")
-    g.init()
-    print("test=test1")
-    test = Test1()
-    print("while start↓")
-    while True:
-	time.sleep(0.01)
-        gest=g.return_gesture()
-        #Match the gesture
-        if gest==g.FORWARD:
-            print("FORWARD")
-            time.sleep(1)
-            router()
-            
+    try:
+	print("いんすたんす？")
+	g=grove_gesture_sensor.gesture()
+	print("ｇ init")
+	g.init()
+	print("initfin")
+    
+	#ledd = threading.Thread(target=led)
+    except IOError:
+	g.init()
+	print("IOE 1nitmain")
+	pass
+    
+    try:
+	while True:
+	    time.sleep(0.1)
+	    gest=g.return_gesture()
 
+	    #Match the gesture
+	    if gest==g.FORWARD:
+		print("FORWARD")
+		time.sleep(1)
+		router()
+
+
+	    elif gest==g.DOWN:
+		print("DOWN")
+		time.sleep(1)
+		#router()
+		    
+	    elif gest==g.RIGHT:
+		print("RIGHT")
+		time.sleep(1)
+		#router()
+		
+	    elif gest==g.LEFT:
+		
+		print("LEFT")
+		time.sleep(1)
+		#router()
+		
+	    elif gest==g.UP:
+		print("UP")
+		time.sleep(1)
+		print("router")
+		#router()
+		
+	    else :
+		time.sleep(.1)
+    
+
+	#elif gest==0:
+	#    led()
+    except IOError:
+
+	#print("__________________/ntry/n________________")
+	subprocess.call(['i2cdetect', '-y', '1'])
+	subprocess.Popen(['python','/home/pi/Desktop/Wi-Pi-System/test/Gesture/ges-subprocess.py'])
+
+	print("IOE  sub kill")
+	sub.kill()
+            
+"""
+
+            
+'''
         elif gest==g.RIGHT:
             print("RIGHT")
             time.sleep(1)
@@ -188,16 +209,8 @@ def main():
             time.sleep(1)
 	    print("router")
             router()
-	    print("testbegin")
-	    test.begin()
-            
-        elif gest==g.DOWN:
-            print("DOWN")
-            time.sleep(1)
-            router()
-	    test.end()
-            
-"""
+
+'''
         elif gest==g.CLOCKWISE:
             print("CLOCKWISE")
     #        time.sleep(1)
@@ -210,14 +223,9 @@ def main():
             print("WAVE")
    #         time.sleep(1)
             led()
-        elif gest==0:
-            print("-")
+
 """
     
 if __name__ == '__main__':
-    main = threading.Thread(target=main)
-    
-    #test = Test1()
 
-    #main()
-    main.start()
+    main()

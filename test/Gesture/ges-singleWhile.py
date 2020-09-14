@@ -42,45 +42,13 @@ import time
 import subprocess
 from grovepi import *
 
-class Test1():
-  def __init__(self):
-    self.started = threading.Event()
-    self.alive = True
-    self.thread = threading.Thread(target=self.func)
-    self.thread.start()
 
-  def __del__(self):
-    print("killcall")
-    self.kill()
-    print("killfin")
 
-  def begin(self):
-    print("selfbegin")
-    self.started.set()
-    print("setfin")
-
-  def end(self):
-    print("end.clearstat")
-    self.started.clear()
-    digitalWrite(7,0)# Send LOW to switch off LED
-    print("\nend")
-
-  def kill(self):
-    print("killset")
-    self.started.set()
-    self.alive = False
-    print("killjoin")
-    self.thread.join()
-
-  def func(self):
+'''
+def func(self):
     i = 0
     led =7
     self.started.wait()
-    
-    print("thgいんすたんす")
-    g=grove_gesture_sensor.gesture()
-    print("th ｇ init")
-    g.init()
     while self.alive:
       i += 1
       #print ("{}\r".format(i),end="")
@@ -93,7 +61,7 @@ class Test1():
       print ("Thread-LED OFF!")
       time.sleep(2)
       self.started.wait()
-
+'''
 
 flag1 =False
 time.sleep(1)
@@ -105,10 +73,12 @@ def router():
                 
     if flag1 == 1:
 	#onにする
+	#subprocess.call(['sudo','ip','set','wlan1','up'])
+
 	#subprocess.call(['sudo','sed','-i','s/Wi-Pi-OPEN.conf/hostapd.conf/g','/etc/default/hostapd'])
 	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
 	#subprocess.call(['sudo','systemctl','restart','hostapd'])
-	led()#処理例
+	led("lightup")#処理例
 	
         flag1=0
         print("router change :"+ str(flag1))
@@ -116,29 +86,47 @@ def router():
 	
     else:
 	#off
+	#subprocess.call(['sudo','ip','set','wlan1','down'])
+
 	#subprocess.call(['sudo','sed','-i','s/hostapd.conf/Wi-Pi-OPEN.conf/g','/etc/default/hostapd'])
 	#subprocess.call(['sudo','systemctl','restart','dhcpcd'])
 	#subprocess.call(['sudo','systemctl','restart','hostapd'])
-	led() #処理例
+	led("lightup") #処理例
 	flag1= 1 
 	print("router change :"+ str(flag1))
 		
 
 
-def led():
-    global flag1
-    led = 7
-    if (flag1==1):
-	#Blink the LED
-	digitalWrite(led,1)		# Send HIGH to switch on LED
-	print ("LED ON!")
-	time.sleep(0.1)
-		
-    else:
-	digitalWrite(led,0)		# Send LOW to switch on LED
-	print ("LED OFF!")
-	time.sleep(0.1)
+def led(job):
+	global	flag1
+	led = 7
+	
+	if(job=="lightup"):
+	    #Blink the LED
+	    digitalWrite(led,1)     # Send HIGH to switch on LED
+	    print ("LED ON!")
+	    time.sleep(3)
 
+	    digitalWrite(led,0)     # Send LOW to switch off LED
+	    print ("LED OFF!")
+	    time.sleep(3)
+	
+	elif(job == "flash" and flag1 == 1):
+	    digitalWrite(led,1)     # Send HIGH to switch on LED
+	    print ("Thread-LED ON!")
+	    time.sleep(0.5)
+                    
+	    digitalWrite(led,0)     # Send LOW to switch off LED
+	    print ("Thread-LED OFF!")
+	    time.sleep(0.5)
+	
+	else:
+            #Error
+	    digitalWrite(led,0)     # Send LOW to switch on LED
+	    print ("Error")
+	
+	
+	
 '''def led_thread():#スレッドを使用点滅はWhileTrueを利用、点灯はbreakで抜けてくる、stopを引数に入れると完全に止まる
     led = 7
     while True:
@@ -160,9 +148,9 @@ def main():
     g=grove_gesture_sensor.gesture()
     print("ｇ init")
     g.init()
-    print("test=test1")
-    test = Test1()
-    print("while start↓")
+    
+    ledd = threading.Thread(target=led)
+
     while True:
 	time.sleep(0.01)
         gest=g.return_gesture()
@@ -187,15 +175,20 @@ def main():
             print("UP")
             time.sleep(1)
 	    print("router")
+	    flag1= 1
             router()
-	    print("testbegin")
-	    test.begin()
+
             
         elif gest==g.DOWN:
             print("DOWN")
             time.sleep(1)
+	    flag1 =0
             router()
-	    test.end()
+
+        elif gest==0:
+	    led("flash")
+            
+
             
 """
         elif gest==g.CLOCKWISE:
@@ -210,14 +203,14 @@ def main():
             print("WAVE")
    #         time.sleep(1)
             led()
-        elif gest==0:
-            print("-")
+
 """
     
 if __name__ == '__main__':
     main = threading.Thread(target=main)
+    #led = threading.Thread(target=led)
     
-    #test = Test1()
 
     #main()
     main.start()
+    #led.start()
