@@ -41,6 +41,7 @@ from grovepi import *
 
 #ほか
 import time
+
 import sys
 import subprocess
 
@@ -63,14 +64,14 @@ def router():
                 
     if routerFlag == True:
 	#onにする
-	sub = subprocess.call(['sudo','ip','l','set','wlan1','up']) #Wi-Fi起動トングルなためおそらくWlan1
+	sub = subprocess.call(['sudo','ip','l','set','wlan1','up']) 
 	if sub==1:
 		print('\n\n\nトングル繋がってますか？\n\n')
 	print("Turn on secure line")
 
 	led("send")
 	
-        print("router ON  routerFlag:"+ str(routerFlag))
+        #print("router ON  routerFlag:"+ str(routerFlag))
 
 	
     else:
@@ -83,7 +84,7 @@ def router():
 
 	led("send")
 	
-	print("router OFF routerFlag:"+ str(routerFlag))
+	#print("router OFF routerFlag:"+ str(routerFlag))
 		
 
 
@@ -105,26 +106,40 @@ def led(job):
 		
     elif job=="recog":
 	#Gesture認識
-	
-	    for num in range(5):
+	for num in range(5):
 		#Blink the LED
-		digitalWrite(led,1)     # Send HIGH to switch on LED
-		print ("LED ON!")
+		digitalWrite(led,1)    
+		#print ("LED ON!")
 		time.sleep(0.1)
 
-		digitalWrite(led,0)     # Send LOW to switch off LED
-		print ("LED OFF!")
+		digitalWrite(led,0)    
+		#print ("LED OFF!")
 		time.sleep(0.1)
+	
+    elif job=="wakeup":
+	for num in range(5):
+	#プログラム起動時
+		#Blink the LED
+		digitalWrite(led,1)   
+		#print ("LED ON!")
+		time.sleep(0.05)
+
+		digitalWrite(led,0)     
+		#print ("LED OFF!")
+		time.sleep(0.05)
+	
+	
 
 def main():
     global routerFlag
     try:
 	g=grove_gesture_sensor.gesture()
  	g.init() 
-	print("Welcome to the Wi-Pi")    
+	print("Welcome to the Wi-Pi")
+	subprocess.call(['sudo','ip','l','set','wlan0','up']) #public line ON
 
     except IOError:
-    #なぜかラズパイ起動後には必ず１回IOErrorが出るためリスタートしている 
+    #なぜかラズパイ起動後には必ず１回IOErrorが出るためリスタートしている g.init() 部分
 	print("wake-up Error Resterting")
 	main()
 	pass
@@ -156,20 +171,23 @@ def main():
 
     except IOError:#意図しない強制終了の際に、プログラムを再起動させる
 	print("__________________\n try \n________________")
-	subprocess.Popen(['python','/home/pi/Desktop/Wi-Pi-System/main/Gesture/ges-reverse.py'])
-
+	subprocess.Popen(['python','/home/pi/Desktop/Wi-Pi-System/main/Wi-Pi.py'])
+	time.sleep(2)
 
     except KeyboardInterrupt: 
 	print("Ctrl +C ")
 	digitalWrite(7,0)
-	#↓プログラム強制終了時にセキュア回線をOFFにするため落とす
-	subprocess.call(['sudo','ip','l','set','wlan1','down'])
+	#↓プログラム強制終了時に回線をOFFにするため落とす
+	
+	#subprocess.call(['sudo','ip','l','set','wlan0','down']) #public line off
+	subprocess.call(['sudo','ip','l','set','wlan1','down']) #secure line off
 	print("Turn off secure line")
 	print("See you")
 	sys.exit()
 
 if __name__ == '__main__':
     global routerflag
+    led("wakeup")
     with open('/home/pi/Desktop/Wi-Pi-System/main/Wi-Pi.json','r') as f:
 	df = json.load(f)
 	routerFlag = df['routerFlag']
