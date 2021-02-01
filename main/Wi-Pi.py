@@ -179,7 +179,7 @@ def main():
 	digitalWrite(7,0)
 	#↓プログラム強制終了時に回線をOFFにするため落とす
 	
-	#subprocess.call(['sudo','ip','l','set','wlan0','down']) #public line off
+	subprocess.call(['sudo','ip','l','set','wlan0','down']) #public line off
 	subprocess.call(['sudo','ip','l','set','wlan1','down']) #secure line off
 	print("Turn off secure line")
 	print("See you")
